@@ -1,23 +1,34 @@
 const smsService = require('../services/sms.service');
-// const config = require('../config');
 
 module.exports = {
     sendMessagesBulk,
 };
 
-
-function sendMessagesBulk(req, res) {
+async function sendMessagesBulk(req, res) {
     // Send SMS
     const params = req.body;
     if (!params.toNumbers) return res.sendStatus(500);
     if (!params.message) return res.sendStatus(500);
 
-    const actions = params.toNumbers.map(sendSingleSms); // run the function over all items
+    const smsOptions = {
+        sender: params.from,
+        messageText: params.message,
+        type: params.unicode ? 'unicode' : 'text',
+    };
 
-    Promise.all(actions)
-        .then((results) => res.send(results));
+    if (typeof params.toNumbers === "string") {
+        const singleSms = await sendSingleSms(params.toNumbers, smsOptions);
+        return res.send(singleSms);
+    }
 
-    function sendSingleSms(number){
-        return smsService.sendNexmoMessage(params.from, number, params.message);
+    const actions = params.toNumbers.map(async toNumber => await sendSingleSms(toNumber, smsOptions)); // run the function over all items
+    const results = await Promise.all(actions);
+
+    res.send(results);
+
+    async function sendSingleSms(number, options) {
+        options['toNumber'] = number;
+
+        return await smsService.sendNexmoMessage(options);
     }
 };

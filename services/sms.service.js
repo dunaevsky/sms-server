@@ -8,24 +8,27 @@ const nexmo = new Nexmo({
 });
 
 module.exports = {
-    sendNexmoMessage,
+    sendNexmoMessage:sendNexmoMessage,
 }
 
-function sendNexmoMessage(sender, toNumber, messageText) {
+// https://developer.nexmo.com/api/sms#send-an-sms
+async function sendNexmoMessage(smsOptions) {
+    return new Promise((resolve, reject) => {
         nexmo.message.sendSms(
-            sender,
-            toNumber,
-            messageText,
-            (err, responseData) => {
+            smsOptions.sender,
+            smsOptions.toNumber,
+            smsOptions.messageText,
+            {type: smsOptions.type},
+            (err, responseData) => { //TODO: handle callback
                 if (responseData) {
                     console.log(responseData);
-                    return responseData;
+                    resolve(responseData);
                 }
                 if (err) {
                     console.error(err);
-                    return err; // we'll see how to monitor unsent or errorous sms later
+                    resolve(err); // we'll see how to monitor unsent or errorous sms later
                 }
-
             }
         );
+    });
 }
