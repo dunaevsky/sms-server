@@ -13,12 +13,13 @@ module.exports = {
 
 // https://developer.nexmo.com/api/sms#send-an-sms
 async function sendNexmoMessage(smsOptions) {
+    const {sender, toNumber, messageText, type} = {...smsOptions}
     return new Promise((resolve, reject) => {
         nexmo.message.sendSms(
-            smsOptions.sender,
-            smsOptions.toNumber,
-            smsOptions.messageText,
-            {type: smsOptions.type},
+            sender,
+            toNumber,
+            messageText,
+            {type: type},
             (err, responseData) => { //TODO: handle callback
                 if (responseData) {
                     console.log(responseData);
